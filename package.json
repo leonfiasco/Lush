@@ -9,6 +9,9 @@
     "start": "node dist/server.js",
     "dev": "tsx src/server.ts"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@pothos/core": "^4.13.1",
     "@pothos/plugin-prisma": "^4.15.0",
@@ -19,7 +22,8 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "prisma": "5.14.0",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.9.0",
     "tsx": "^4.23.1",
     "typescript": "5"
   }
