@@ -13,19 +13,36 @@ builder.queryField("tasks", (t) =>
       completed: t.arg.boolean({
         required: false,
       }),
+
+      limit: t.arg.int({
+        required: false,
+        defaultValue: 10,
+      }),
+
+      offset: t.arg.int({
+        required: false,
+        defaultValue: 0,
+      }),
     },
 
-    resolve: async (query, root, args) => {
+    resolve: async (query, _, args) => {
+      const where = {
+        taskListId: args.taskListId,
+
+        ...(args.completed !== null && {
+          completed: args.completed,
+        }),
+      };
       return prisma.task.findMany({
         ...query,
 
-        where: {
-          taskListId: args.taskListId,
+        where,
 
-          ...(args.completed !== null &&
-            args.completed !== undefined && {
-              completed: args.completed,
-            }),
+        take: args.limit ?? undefined,
+        skip: args.offset ?? undefined,
+
+        orderBy: {
+          createdAt: "asc",
         },
       });
     },
