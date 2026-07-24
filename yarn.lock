@@ -254,6 +254,11 @@
   dependencies:
     "@prisma/generator-helper" "^7.7.0"
 
+"@pothos/plugin-zod@^4.3.1":
+  version "4.3.1"
+  resolved "https://registry.yarnpkg.com/@pothos/plugin-zod/-/plugin-zod-4.3.1.tgz#798e96e5577d406031d67f3d8119aa12d7b7d768"
+  integrity sha512-37ybbHfjoqibUfPeVnkFbCURdSN8Ea2uu7hXE/349vfTQ7dzejRYw+8QC4ERns+rI0UUMc8ZxS23GET7/K2Rcw==
+
 "@prisma/client@5.14.0":
   version "5.14.0"
   resolved "https://registry.yarnpkg.com/@prisma/client/-/client-5.14.0.tgz#dadca5bb1137ddcebb454bbdaf89423823d3363f"
@@ -501,3 +506,8 @@ urlpattern-polyfill@^10.0.0:
   version "10.1.0"
   resolved "https://registry.yarnpkg.com/urlpattern-polyfill/-/urlpattern-polyfill-10.1.0.tgz#1b2517e614136c73ba32948d5e7a3a063cba8e74"
   integrity sha512-IGjKp/o0NL3Bso1PymYURCJxMPNAf/ILOpendP9f5B6e1rTJgdgiOvgfoT8VxCAdY+Wisb9uhGaJJf3yZ2V9nw==
+
+zod@^4.4.3:
+  version "4.4.3"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-4.4.3.tgz#b680f172885d18bbebf21a834ea25e55a1bbf356"
+  integrity sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==
