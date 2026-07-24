@@ -14,7 +14,7 @@ builder.mutationField("addTask", (t) =>
         validate: {
           schema: z
             .string()
-            .min(1, "Task title cannot be empty")
+            .trim()
             .min(3, "Task title must be at least 3 characters")
             .max(30, "Task title cannot exceed 30 characters"),
         },
@@ -33,6 +33,8 @@ builder.mutationField("addTask", (t) =>
     },
 
     resolve: async (query, _, args) => {
+      const title = args.title.trim().toLowerCase();
+
       const taskList = await prisma.taskList.findUnique({
         where: {
           id: args.taskListId,
@@ -47,11 +49,29 @@ builder.mutationField("addTask", (t) =>
         });
       }
 
+      const existingTask = await prisma.task.findFirst({
+        where: {
+          taskListId: args.taskListId,
+          title,
+        },
+      });
+
+      if (existingTask) {
+        throw new GraphQLError(
+          "A task with this title already exists in this task list",
+          {
+            extensions: {
+              code: "BAD_USER_INPUT",
+            },
+          },
+        );
+      }
+
       return prisma.task.create({
         ...query,
 
         data: {
-          title: args.title,
+          title,
           taskListId: args.taskListId,
         },
       });

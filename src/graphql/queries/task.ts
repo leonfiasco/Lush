@@ -1,5 +1,6 @@
 import { builder } from "../builder.js";
 import prisma from "../../utils/prisma.js";
+import { GraphQLError } from "graphql";
 import { z } from "zod";
 
 builder.queryField("task", (t) =>
@@ -9,6 +10,7 @@ builder.queryField("task", (t) =>
     args: {
       id: t.arg.id({
         required: true,
+
         validate: {
           schema: z
             .string()
@@ -21,13 +23,18 @@ builder.queryField("task", (t) =>
     resolve: async (query, _, args) => {
       const task = await prisma.task.findUnique({
         ...query,
+
         where: {
           id: args.id,
         },
       });
 
       if (!task) {
-        throw new Error("Task not found");
+        throw new GraphQLError("Task not found", {
+          extensions: {
+            code: "NOT_FOUND",
+          },
+        });
       }
 
       return task;

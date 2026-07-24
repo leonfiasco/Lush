@@ -25,6 +25,7 @@ builder.mutationField("updateTask", (t) =>
         validate: {
           schema: z
             .string()
+            .trim()
             .min(3, "Task title must be at least 3 characters")
             .max(30, "Task title cannot exceed 30 characters"),
         },
@@ -63,7 +64,7 @@ builder.mutationField("updateTask", (t) =>
 
       const data = {
         ...(args.title != null && {
-          title: args.title,
+          title: args.title.trim(),
         }),
 
         ...(args.completed != null && {
