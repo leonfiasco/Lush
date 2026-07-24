@@ -3,6 +3,5 @@ import { schema } from "../schema.js";
 
 export const yoga = createYoga({
   schema,
-
   maskedErrors: false,
 });
