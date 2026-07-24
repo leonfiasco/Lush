@@ -1,5 +1,6 @@
 import { builder } from "../builder.js";
 import prisma from "../../utils/prisma.js";
+import { GraphQLError } from "graphql";
 import { z } from "zod";
 
 builder.queryField("tasks", (t) =>
@@ -32,6 +33,7 @@ builder.queryField("tasks", (t) =>
               message: "limit must be at least 1",
             },
           ],
+
           max: [
             100,
             {
@@ -56,23 +58,35 @@ builder.queryField("tasks", (t) =>
     },
 
     resolve: async (query, _, args) => {
-      const offset = Math.max(0, args.offset ?? 0);
-      const limit = args.limit
-        ? Math.min(100, Math.max(1, args.limit))
-        : undefined;
+      const taskList = await prisma.taskList.findUnique({
+        where: {
+          id: args.taskListId,
+        },
+      });
 
-      const where = {
-        taskListId: args.taskListId,
-        ...(args.completed != null && {
-          completed: args.completed,
-        }),
-      };
+      if (!taskList) {
+        throw new GraphQLError("Task list not found", {
+          extensions: {
+            code: "NOT_FOUND",
+          },
+        });
+      }
 
       return prisma.task.findMany({
         ...query,
-        where,
-        take: limit,
-        skip: offset,
+
+        where: {
+          taskListId: args.taskListId,
+
+          ...(args.completed != null && {
+            completed: args.completed,
+          }),
+        },
+
+        take: args.limit ?? undefined,
+
+        skip: args.offset ?? undefined,
+
         orderBy: {
           createdAt: "asc",
         },
