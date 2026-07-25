@@ -46,7 +46,7 @@ describe("addTask mutation", () => {
     expect(result.errors).toBeUndefined();
 
     expect(result.data.addTask).toMatchObject({
-      title: "Write documentation".toLowerCase(),
+      title: "Write documentation",
       taskList: {
         id: taskList.id,
       },
@@ -60,7 +60,7 @@ describe("addTask mutation", () => {
 
     expect(savedTask).not.toBeNull();
 
-    expect(savedTask?.title).toBe("write documentation".toLowerCase());
+    expect(savedTask?.title).toBe("Write documentation");
 
     expect(savedTask?.taskListId).toBe(taskList.id);
   });
