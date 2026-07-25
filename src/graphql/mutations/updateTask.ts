@@ -62,15 +62,44 @@ builder.mutationField("updateTask", (t) =>
         });
       }
 
-      const data = {
-        ...(args.title != null && {
-          title: args.title.trim(),
-        }),
+      const data: {
+        title?: string;
+        completed?: boolean;
+      } = {};
 
-        ...(args.completed != null && {
-          completed: args.completed,
-        }),
-      };
+      if (args.completed != null) {
+        data.completed = args.completed;
+      }
+
+      if (args.title != null) {
+        const trimmedTitle = args.title.trim();
+
+        const existingTasks = await prisma.task.findMany({
+          where: {
+            taskListId: task.taskListId,
+            id: {
+              not: args.id,
+            },
+          },
+        });
+
+        const duplicate = existingTasks.find(
+          (t) => t.title.trim().toLowerCase() === trimmedTitle.toLowerCase(),
+        );
+
+        if (duplicate) {
+          throw new GraphQLError(
+            "A task with this title already exists in this task list",
+            {
+              extensions: {
+                code: "BAD_USER_INPUT",
+              },
+            },
+          );
+        }
+
+        data.title = trimmedTitle;
+      }
 
       return prisma.task.update({
         ...query,

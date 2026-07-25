@@ -33,7 +33,7 @@ builder.mutationField("addTask", (t) =>
     },
 
     resolve: async (query, _, args) => {
-      const title = args.title.trim().toLowerCase();
+      const trimmedTitle = args.title.trim();
 
       const taskList = await prisma.taskList.findUnique({
         where: {
@@ -49,14 +49,18 @@ builder.mutationField("addTask", (t) =>
         });
       }
 
-      const existingTask = await prisma.task.findFirst({
+      const existingTasks = await prisma.task.findMany({
         where: {
           taskListId: args.taskListId,
-          title,
         },
       });
 
-      if (existingTask) {
+      const duplicate = existingTasks.find(
+        (task) =>
+          task.title.trim().toLowerCase() === trimmedTitle.toLowerCase(),
+      );
+
+      if (duplicate) {
         throw new GraphQLError(
           "A task with this title already exists in this task list",
           {
@@ -71,7 +75,7 @@ builder.mutationField("addTask", (t) =>
         ...query,
 
         data: {
-          title,
+          title: trimmedTitle,
           taskListId: args.taskListId,
         },
       });
