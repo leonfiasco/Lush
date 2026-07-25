@@ -1,5 +1,5 @@
 {
-  "name": "lush-tech-text",
+  "name": "lush-tech-test",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
@@ -9,7 +9,7 @@
     "start": "node dist/server.js",
     "dev": "tsx src/server.ts",
     "test": "vitest run --no-file-parallelism",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch --no-file-parallelism"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
