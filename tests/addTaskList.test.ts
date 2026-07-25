@@ -1,13 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { yoga } from "../src/graphql/yoga";
 import prisma from "../src/utils/prisma.js";
 
 describe("addTaskList mutation", () => {
-  beforeEach(async () => {
-    await prisma.task.deleteMany();
-    await prisma.taskList.deleteMany();
-  });
-
   it("creates a task list successfully", async () => {
     const mutation = `
       mutation {
