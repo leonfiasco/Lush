@@ -22,13 +22,16 @@ builder.mutationField("addTaskList", (t) =>
     },
 
     resolve: async (query, _, args) => {
-      const existingTaskList = await prisma.taskList.findFirst({
-        where: {
-          name: args.name.trim(),
-        },
-      });
+      const trimmedName = args.name.trim();
 
-      if (existingTaskList) {
+      const existingTaskLists = await prisma.taskList.findMany();
+
+      const duplicate = existingTaskLists.find(
+        (taskList) =>
+          taskList.name.trim().toLowerCase() === trimmedName.toLowerCase(),
+      );
+
+      if (duplicate) {
         throw new GraphQLError("Task list already exists", {
           extensions: {
             code: "BAD_USER_INPUT",
@@ -40,7 +43,7 @@ builder.mutationField("addTaskList", (t) =>
         ...query,
 
         data: {
-          name: args.name.trim(),
+          name: trimmedName,
         },
       });
     },
