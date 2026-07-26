@@ -12,6 +12,8 @@ The API supports:
 - Pagination for tasks
 - Updating tasks
 - Deleting tasks
+- Preventing duplicate task lists
+- Preventing duplicate tasks within the same task list
 
 ---
 
@@ -36,8 +38,9 @@ The API supports:
 git clone <repository-url>
 
 cd <project-folder>
-
 ```
+
+---
 
 ### 2. Install dependencies
 
@@ -53,17 +56,25 @@ or using npm:
 npm install
 ```
 
+---
+
 ### 3. Configure environment variables
 
 Create a `.env` file in the project root:
 
 ```bash
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="file:./prisma/dev.db"
+```
+
+Alternatively, copy the example environment file:
+
+```bash
+cp .env.example .env
 ```
 
 ---
 
-### 4. Setup the database
+### 4. Set up the database
 
 Run Prisma migrations:
 
@@ -79,7 +90,19 @@ yarn prisma generate
 
 ---
 
-### 5. Start the development server
+### 5. Seed the database
+
+Populate the database with sample task lists and tasks:
+
+```bash
+yarn prisma db seed
+```
+
+This provides sample data that can be queried immediately through GraphQL.
+
+---
+
+### 6. Start the development server
 
 ```bash
 yarn dev
@@ -91,7 +114,7 @@ The GraphQL server will start at:
 http://localhost:4000/graphql
 ```
 
-You can test queries and mutations using the GraphQL Playground.
+Open this URL in your browser to access GraphQL Yoga's interactive GraphQL IDE, where you can run queries and mutations.
 
 ---
 
@@ -128,9 +151,42 @@ query {
 }
 ```
 
+Fetch a single task by ID
+
+```GraphQL
+query {
+  task(id: "task_id") {
+    id
+    title
+    completed
+    createdAt
+    updatedAt
+    taskList {
+      id
+      name
+    }
+  }
+}
+```
+
 ---
 
 ## Example Mutation
+
+Create a task list:
+
+```GraphQL
+mutation {
+  addTaskList(
+    name: "Personal Tasks"
+  ) {
+    id
+    name
+  }
+}
+```
+
+---
 
 Create a task:
 
@@ -143,6 +199,38 @@ mutation {
     id
     title
     completed
+  }
+}
+```
+
+---
+
+Update a task:
+
+```GraphQL
+mutation {
+  updateTask(
+    id: "task_id"
+    title: "Updated documentation"
+    completed: true
+  ) {
+    id
+    title
+    completed
+  }
+}
+```
+
+---
+
+Delete a task:
+
+```GraphQL
+mutation {
+  deleteTask(
+    id: "task_id"
+  ) {
+    id
   }
 }
 ```
@@ -179,6 +267,8 @@ This approach was chosen because it is simple to implement and suitable for a sm
 
 For a larger production system with frequently changing data, I would consider cursor-based pagination because it provides more stable pagination performance.
 
+---
+
 ## Error Handling Approach
 
 Errors are handled using GraphQL errors with explicit error codes.
@@ -187,7 +277,7 @@ Examples:
 
 ### Missing resource
 
-When requesting or updating a task that does not exist:
+When requesting, updating, or deleting a task that does not exist:
 
 ```JSON
 {
@@ -227,11 +317,20 @@ Input validation is handled using Zod schemas through the Pothos Zod plugin.
 Examples of validation rules:
 
 - Task titles must be between 3 and 30 characters
+- Task list names must be between 3 and 30 characters
+- Task IDs must be valid CUIDs
 - Task list IDs must be valid CUIDs
 - Pagination limits cannot exceed 100
 - Pagination offsets cannot be negative
 
-Validation occurs before resolver execution.
+Duplicate handling:
+
+- Task list names cannot be duplicated
+- Task titles cannot be duplicated within the same task list
+- Duplicate checks are case-insensitive
+- Original title/name capitalisation is preserved
+
+Validation occurs before resolver execution where possible.
 
 ---
 
@@ -244,19 +343,41 @@ The tests execute GraphQL operations through GraphQL Yoga and verify:
 - GraphQL responses
 - Resolver behaviour
 - Prisma database changes
+- Validation behaviour
+- Error responses
 
 Tests currently cover:
+
+### addTaskList
+
+- Successfully creates a task list
+- Prevents duplicate task list names
+- Prevents duplicate names with different casing
+- Trims whitespace
+- Validates incorrect input
 
 ### addTask
 
 - Successfully creates a task
 - Handles missing task lists
+- Prevents duplicate task titles within the same task list
+- Allows duplicate titles across different task lists
+- Preserves title capitalisation
 - Validates incorrect input
 
 ### updateTask
 
-- Successfully updates a task
+- Successfully updates task titles
+- Successfully updates completion status
+- Prevents duplicate task titles within the same task list
+- Allows duplicate titles across different task lists
+- Handles missing tasks
 - Rejects empty updates
+- Validates incorrect input
+
+### deleteTask
+
+- Successfully deletes a task
 - Handles missing tasks
 
 Integration testing was chosen because it shows the interaction between:
@@ -267,6 +388,8 @@ Integration testing was chosen because it shows the interaction between:
 - Prisma database operations
 
 rather than only testing isolated functions.
+
+---
 
 ## Running Tests
 
@@ -300,9 +423,9 @@ Replace offset pagination with cursor pagination for better performance with lar
 
 Add additional tests covering:
 
-- Delete mutations
 - Query resolvers
 - Pagination edge cases
+- Validation edge cases
 - Database constraint failures
 
 ---
